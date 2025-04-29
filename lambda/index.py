@@ -4,6 +4,7 @@ import os
 import boto3
 import re  # 正規表現モジュールをインポート
 from botocore.exceptions import ClientError
+import urllib.request
 
 
 # Lambda コンテキストからリージョンを抽出する関数
@@ -79,6 +80,15 @@ def lambda_handler(event, context):
                 "topP": 0.9
             }
         }
+
+        # gemma2モデル用のリクエストペイロードを構築
+        request_payload_gemma2 = {
+            "prompt": messages,
+            "max_new_tokens": 512,
+            "do_sample": true,
+            "temperature": 0.7,
+            "top_p": 0.9
+        }
         
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
         
@@ -88,6 +98,11 @@ def lambda_handler(event, context):
             body=json.dumps(request_payload),
             contentType="application/json"
         )
+
+        # FastAPIの呼び出し
+        url = "https://2b10-34-125-13-239.ngrok-free.app/generate"
+        body = json.dumps(request_payload_gemma2).encode('utf-8')
+        response = urllib.request.Request(url, data=body)
         
         # レスポンスを解析
         response_body = json.loads(response['body'].read())
