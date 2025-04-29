@@ -83,7 +83,7 @@ def lambda_handler(event, context):
 
         # gemma2モデル用のリクエストペイロードを構築
         request_payload = {
-            "prompt": messages,
+            "prompt": message,
             "max_new_tokens": 512,
             "do_sample": True,
             "temperature": 0.7,
