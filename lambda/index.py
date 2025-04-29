@@ -71,21 +71,21 @@ def lambda_handler(event, context):
                 })
         
         # invoke_model用のリクエストペイロード
-        request_payload = {
-            "messages": bedrock_messages,
-            "inferenceConfig": {
-                "maxTokens": 512,
-                "stopSequences": [],
-                "temperature": 0.7,
-                "topP": 0.9
-            }
-        }
+        # request_payload = {
+        #     "messages": bedrock_messages,
+        #     "inferenceConfig": {
+        #         "maxTokens": 512,
+        #         "stopSequences": [],
+        #         "temperature": 0.7,
+        #         "topP": 0.9
+        #     }
+        # }
 
         # gemma2モデル用のリクエストペイロードを構築
-        request_payload_gemma2 = {
+        request_payload = {
             "prompt": messages,
             "max_new_tokens": 512,
-            "do_sample": true,
+            "do_sample": True,
             "temperature": 0.7,
             "top_p": 0.9
         }
@@ -93,16 +93,22 @@ def lambda_handler(event, context):
         print("Calling Bedrock invoke_model API with payload:", json.dumps(request_payload))
         
         # invoke_model APIを呼び出し
-        response = bedrock_client.invoke_model(
-            modelId=MODEL_ID,
-            body=json.dumps(request_payload),
-            contentType="application/json"
-        )
+        # response = bedrock_client.invoke_model(
+        #     modelId=MODEL_ID,
+        #     body=json.dumps(request_payload),
+        #     contentType="application/json"
+        # )
 
         # FastAPIの呼び出し
         url = "https://2b10-34-125-13-239.ngrok-free.app/generate"
-        body = json.dumps(request_payload_gemma2).encode('utf-8')
-        response = urllib.request.Request(url, data=body)
+        body = json.dumps(request_payload).encode('utf-8')
+        headers = {
+            "Content-Type": "application/json"
+        }
+        req = urllib.request.Request(url, data=body, headers=headers, method="POST")
+        with urllib.request.urlopen(req) as res:
+            response_body = res.read().decode('utf-8')
+            print(response_body)
         
         # レスポンスを解析
         response_body = json.loads(response['body'].read())
